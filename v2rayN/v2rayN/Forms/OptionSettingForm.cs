@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Text;
 using System.Windows.Forms;
@@ -42,11 +43,13 @@ namespace v2rayN.Forms
                 txtlocalPort.Text = config.inbound[0].localPort.ToString();
                 cmbprotocol.Text = config.inbound[0].protocol.ToString();
                 chkudpEnabled.Checked = config.inbound[0].udpEnabled;
+                chksniffingEnabled.Checked = config.inbound[0].sniffingEnabled;
                 if (config.inbound.Count > 1)
                 {
                     txtlocalPort2.Text = config.inbound[1].localPort.ToString();
                     cmbprotocol2.Text = config.inbound[1].protocol.ToString();
                     chkudpEnabled2.Checked = config.inbound[1].udpEnabled;
+                    chksniffingEnabled2.Checked = config.inbound[1].sniffingEnabled;
                     chkAllowIn2.Checked = true;
                 }
                 else
@@ -66,12 +69,14 @@ namespace v2rayN.Forms
         private void InitRouting()
         {
             //路由
-            chkBypassChinasites.Checked = config.chinasites;
-            chkBypassChinaip.Checked = config.chinaip;
+            cmbdomainStrategy.Text = config.domainStrategy;
+            int routingMode = 0;
+            int.TryParse(config.routingMode, out routingMode);
+            cmbroutingMode.SelectedIndex = routingMode;
 
-            txtUseragent.Text = Utils.List2String(config.useragent);
-            txtUserdirect.Text = Utils.List2String(config.userdirect);
-            txtUserblock.Text = Utils.List2String(config.userblock);
+            txtUseragent.Text = Utils.List2String(config.useragent, true);
+            txtUserdirect.Text = Utils.List2String(config.userdirect, true);
+            txtUserblock.Text = Utils.List2String(config.userblock, true);
         }
 
         /// <summary>
@@ -131,7 +136,7 @@ namespace v2rayN.Forms
             }
             else
             {
-                UI.Show("操作失败，请检查重试");
+                UI.Show(UIRes.I18N("OperationFailed"));
             }
         }
 
@@ -152,34 +157,37 @@ namespace v2rayN.Forms
             string localPort = txtlocalPort.Text.Trim();
             string protocol = cmbprotocol.Text.Trim();
             bool udpEnabled = chkudpEnabled.Checked;
+            bool sniffingEnabled = chksniffingEnabled.Checked;
             if (Utils.IsNullOrEmpty(localPort) || !Utils.IsNumberic(localPort))
             {
-                UI.Show("请填写本地监听端口");
+                UI.Show(UIRes.I18N("FillLocalListeningPort"));
                 return -1;
             }
             if (Utils.IsNullOrEmpty(protocol))
             {
-                UI.Show("请选择协议");
+                UI.Show(UIRes.I18N("PleaseSelectProtocol"));
                 return -1;
             }
             config.inbound[0].localPort = Utils.ToInt(localPort);
             config.inbound[0].protocol = protocol;
             config.inbound[0].udpEnabled = udpEnabled;
+            config.inbound[0].sniffingEnabled = sniffingEnabled;
 
             //本地监听2
             string localPort2 = txtlocalPort2.Text.Trim();
             string protocol2 = cmbprotocol2.Text.Trim();
             bool udpEnabled2 = chkudpEnabled2.Checked;
+            bool sniffingEnabled2 = chksniffingEnabled2.Checked;
             if (chkAllowIn2.Checked)
             {
                 if (Utils.IsNullOrEmpty(localPort2) || !Utils.IsNumberic(localPort2))
                 {
-                    UI.Show("请填写本地监听端口2");
+                    UI.Show(UIRes.I18N("FillLocalListeningPort"));
                     return -1;
                 }
                 if (Utils.IsNullOrEmpty(protocol2))
                 {
-                    UI.Show("请选择协议2");
+                    UI.Show(UIRes.I18N("PleaseSelectProtocol"));
                     return -1;
                 }
                 if (config.inbound.Count < 2)
@@ -189,6 +197,7 @@ namespace v2rayN.Forms
                 config.inbound[1].localPort = Utils.ToInt(localPort2);
                 config.inbound[1].protocol = protocol2;
                 config.inbound[1].udpEnabled = udpEnabled2;
+                config.inbound[1].sniffingEnabled = sniffingEnabled2;
             }
             else
             {
@@ -217,16 +226,16 @@ namespace v2rayN.Forms
         /// <returns></returns>
         private int SaveRouting()
         {
-            //路由
-            bool bypassChinasites = chkBypassChinasites.Checked;
-            bool bypassChinaip = chkBypassChinaip.Checked;
+            //路由            
+            string domainStrategy = cmbdomainStrategy.Text;
+            string routingMode = cmbroutingMode.SelectedIndex.ToString();
 
             string useragent = txtUseragent.Text.Trim();
             string userdirect = txtUserdirect.Text.Trim();
             string userblock = txtUserblock.Text.Trim();
 
-            config.chinasites = bypassChinasites;
-            config.chinaip = bypassChinaip;
+            config.domainStrategy = domainStrategy;
+            config.routingMode = routingMode;
 
             config.useragent = Utils.String2List(useragent);
             config.userdirect = Utils.String2List(userdirect);
@@ -256,7 +265,7 @@ namespace v2rayN.Forms
                 || Utils.IsNullOrEmpty(readBufferSize) || !Utils.IsNumberic(readBufferSize)
                 || Utils.IsNullOrEmpty(writeBufferSize) || !Utils.IsNumberic(writeBufferSize))
             {
-                UI.Show("请正确填写KCP参数");
+                UI.Show(UIRes.I18N("FillKcpParameters"));
                 return -1;
             }
             config.kcpItem.mtu = Utils.ToInt(mtu);
@@ -302,6 +311,51 @@ namespace v2rayN.Forms
             txtlocalPort2.Enabled =
             cmbprotocol2.Enabled =
             chkudpEnabled2.Enabled = blAllow2;
+        }
+
+        private void btnSetDefRountingRule_Click(object sender, EventArgs e)
+        {
+            var lstUrl = new List<string>();
+            lstUrl.Add(Global.CustomRoutingListUrl + "proxy");
+            lstUrl.Add(Global.CustomRoutingListUrl + "direct");
+            lstUrl.Add(Global.CustomRoutingListUrl + "block");
+
+            var lstTxt = new List<TextBox>();
+            lstTxt.Add(txtUseragent);
+            lstTxt.Add(txtUserdirect);
+            lstTxt.Add(txtUserblock);
+
+            for (int k = 0; k < lstUrl.Count; k++)
+            {
+                var txt = lstTxt[k];
+                V2rayUpdateHandle v2rayUpdateHandle3 = new V2rayUpdateHandle();
+                v2rayUpdateHandle3.UpdateCompleted += (sender2, args) =>
+                {
+                    if (args.Success)
+                    {
+                        var result = args.Msg;
+                        if (Utils.IsNullOrEmpty(result))
+                        {
+                            return;
+                        }
+                        txt.Text = result;
+                    }
+                    else
+                    {
+                        AppendText(false, args.Msg);
+                    }
+                };
+                v2rayUpdateHandle3.Error += (sender2, args) =>
+                {
+                    AppendText(true, args.GetException().Message);
+                };
+
+                v2rayUpdateHandle3.WebDownloadString(lstUrl[k]);
+            }
+        }
+        void AppendText(bool notify, string text)
+        {
+            labRoutingTips.Text = text;
         }
     }
 }

@@ -21,10 +21,7 @@ namespace v2rayN
         ///  
         /// </summary>
         public const string GithubIssuesUrl = @"https://github.com/2dust/v2rayN/issues";
-        /// <summary>
-        ///  
-        /// </summary>
-        public const string TelegramGroupUrl = @"https://t.me/v2rayN";
+
 
         /// <summary>
         /// SpeedTestUrl
@@ -33,6 +30,11 @@ namespace v2rayN
         //public const string SpeedTestUrl = @"http://speedtest.tokyo2.linode.com/100MB-tokyo2.bin";
         public const string SpeedTestUrl = @"http://speedtest-sfo2.digitalocean.com/10mb.test";
 
+
+        /// <summary>
+        /// CustomRoutingListUrl
+        /// </summary>
+        public const string CustomRoutingListUrl = @"https://raw.githubusercontent.com/2dust/v2rayCustomRoutingList/master/";
 
         /// <summary>
         /// 本软件配置文件名
@@ -89,7 +91,7 @@ namespace v2rayN
         /// <summary>
         /// 代理 tag值
         /// </summary>
-        public const string agentTag = "agentout";
+        public const string agentTag = "proxy";
 
         /// <summary>
         /// 直连 tag值
@@ -99,7 +101,7 @@ namespace v2rayN
         /// <summary>
         /// 阻止 tag值
         /// </summary>
-        public const string blockTag = "blockout";
+        public const string blockTag = "block";
 
         /// <summary>
         /// vmess
@@ -120,6 +122,15 @@ namespace v2rayN
         /// </summary>
         public const string userEMail = "t@t.tt";
 
+        /// <summary>
+        /// MyRegPath
+        /// </summary>
+        public const string MyRegPath = "Software\\v2rayNGUI";
+
+        /// <summary>
+        /// Language
+        /// </summary>
+        public const string MyRegKeyLanguage = "CurrentLanguage";
 
         #endregion
 

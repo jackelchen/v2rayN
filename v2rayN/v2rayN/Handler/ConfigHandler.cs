@@ -35,10 +35,6 @@ namespace v2rayN.Handler
                 config.loglevel = "warning";
                 config.vmess = new List<VmessItem>();
 
-                //路由
-                config.chinasites = false;
-                config.chinaip = false;
-
                 //Mux
                 config.muxEnabled = true;
 
@@ -54,6 +50,7 @@ namespace v2rayN.Handler
                 inItem.protocol = "socks";
                 inItem.localPort = 1080;
                 inItem.udpEnabled = true;
+                inItem.sniffingEnabled = true;
 
                 config.inbound.Add(inItem);
 
@@ -73,6 +70,14 @@ namespace v2rayN.Handler
                 }
             }
             //路由规则
+            if (Utils.IsNullOrEmpty(config.domainStrategy))
+            {
+                config.domainStrategy = "IPIfNonMatch";
+            }
+            if (Utils.IsNullOrEmpty(config.routingMode))
+            {
+                config.routingMode = "0";
+            }
             if (config.useragent == null)
             {
                 config.useragent = new List<string>();
@@ -97,7 +102,10 @@ namespace v2rayN.Handler
                 config.kcpItem.writeBufferSize = 2;
                 config.kcpItem.congestion = false;
             }
-
+            if (config.uiItem == null)
+            {
+                config.uiItem = new UIItem();
+            }
             //// 如果是用户升级，首次会有端口号为0的情况，不可用，这里处理
             //if (config.pacPort == 0)
             //{
@@ -230,7 +238,7 @@ namespace v2rayN.Handler
             vmessItem.requestHost = config.vmess[index].requestHost;
             vmessItem.path = config.vmess[index].path;
             vmessItem.streamSecurity = config.vmess[index].streamSecurity;
-            vmessItem.remarks = string.Format("{0}-副本", config.vmess[index].remarks);
+            vmessItem.remarks = string.Format("{0}-clone", config.vmess[index].remarks);
 
             config.vmess.Add(vmessItem);
 
